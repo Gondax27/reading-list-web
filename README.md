@@ -1,30 +1,36 @@
-# React + TypeScript + Vite
+## Reading Book List Web
+Aplicación que se realiza con el fin de diseñar e implementar una pequeña aplicación web de lista de libros empleando el stack
+de desarrollo empleado por la organización de Jelou AI.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![FotoAPP](public/FotoApp.webp)
 
-Currently, two official plugins are available:
+## Primeros Pasos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Para trabajar en el proyecto sin contratiempos deberías de seguir los siguientes pasos:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+### Clona el proyecto asociado al repositorio de Github
+```bash
+git clone https://github.com/Gondax27/reading-list-web.git
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+### Revisión de la versión de Node.js
+El proyecto fue desarrollado con la versión 20.13.1 de Node.js, se recomienda usar esta versión o versiones LTS superiores para el correcto funcionamiento del proyecto.
+Para verificar tu versión de Node.js puedes ejecutar el comando:
+```bash
+node -v
+```
+
+### Instala las dependencias del proyecto
+Una vez clonado el proyecto, accede a la carpeta en donde lo guardaste y en la consola de comandos digita:
+```bash
+npm install
+```
+
+### Ejecuta el proyecto localmente
+Una vez tengas todas las dependencias instaladas, es momento de ejecutar el proyecto, para ejecutar de manera correcta el proyecto puedes ingresar el comando de:
+
+```bash
+npm run dev
+```
+
+Una vez ejecutado el comando ya puedes acceder al proyecto por medio de la URL de http://localhost:5173
