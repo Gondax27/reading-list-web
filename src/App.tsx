@@ -1,7 +1,7 @@
 import AvailableBooks from '@/components/AvailableBooks';
 import ReadingList from '@/components/ReadingList';
-import Spinner from '@/components/Spinner';
 import Sidebar from './components/sidebar';
+import Spinner from '@/components/Spinner';
 
 import useBooksQuery from '@/hooks/useBooksQuery';
 
@@ -15,6 +15,7 @@ const App = () => {
           <Spinner />
         </main>
       )
+
       : (
         <>
           <main className='grid grid-cols-1 gap-6 p-10 lg:grid-cols-3'>

@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect } from 'react';
 
+import useBreakpoint from '@/hooks/useBreakpoints';
+
 import CloseIcon from '@/assets/CloseIcon';
 
 import './styles.css';
-import useBreakpoint from '@/hooks/useBreakpoints';
 
 interface SidebarProps {
   allowOutsideClick?: boolean;
@@ -21,7 +22,7 @@ const SidebarElement = ({ allowOutsideClick, element, show, setShow }: SidebarPr
   }, [show]);
 
   useEffect(() => {
-    if (['lg', 'xl', 'sxl'].includes(breakpoint || '') && show) setShow(false);
+    if (['lg', 'xl', '2xl'].includes(breakpoint || '') && show) setShow(false);
   }, [breakpoint]); // eslint-disable-line
   
 
