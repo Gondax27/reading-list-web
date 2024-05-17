@@ -12,7 +12,7 @@ const MenuIcon = (props: SVGProps<SVGSVGElement>) => (
     {...props}
   >
     <path stroke='none' d='M0 0h24v24H0z' />
-    <path d='M4 6h16M4 12h16M4 18h16' />
+    <path d='M3 19a9 9 0 0 1 9 0 9 9 0 0 1 9 0M3 6a9 9 0 0 1 9 0 9 9 0 0 1 9 0M3 6v13M12 6v13M21 6v13' />
   </svg>
 );
 

@@ -28,15 +28,15 @@ const App = () => {
           </main>
 
           <Sidebar
-          allowOutsideClick
             element={
               <ReadingList
                 className='transition-[opacity] animation-fade-in'
                 wrapperImagesClassName='grid grid-cols-2 gap-4'
               />
             }
-            setShow={setShowMenu}
             show={showMenu}
+            allowOutsideClick
+            setShow={setShowMenu}
           />
         </>
       )
