@@ -3,6 +3,7 @@ import React, { useCallback, useEffect } from 'react';
 import CloseIcon from '@/assets/CloseIcon';
 
 import './styles.css';
+import useBreakpoint from '@/hooks/useBreakpoints';
 
 interface SidebarProps {
   allowOutsideClick?: boolean;
@@ -12,10 +13,17 @@ interface SidebarProps {
 }
 
 const SidebarElement = ({ allowOutsideClick, element, show, setShow }: SidebarProps) => {
+  const breakpoint = useBreakpoint();
+
   useEffect(() => {
     if (show) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = 'auto';
   }, [show]);
+
+  useEffect(() => {
+    if (['lg', 'xl', 'sxl'].includes(breakpoint || '') && show) setShow(false);
+  }, [breakpoint]); // eslint-disable-line
+  
 
   const handleClose = useCallback((ev: React.MouseEvent) => {
     ev.stopPropagation();
