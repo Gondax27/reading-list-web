@@ -1,11 +1,12 @@
 import AvailableBooks from '@/components/AvailableBooks';
 import ReadingList from '@/components/ReadingList';
 import Spinner from '@/components/Spinner';
+import Sidebar from './components/sidebar';
 
 import useBooksQuery from '@/hooks/useBooksQuery';
 
 const App = () => {
-  const { booksQuery } = useBooksQuery();
+  const { booksQuery, showMenu, setShowMenu } = useBooksQuery();
 
   return (
     booksQuery.isLoading
@@ -15,10 +16,28 @@ const App = () => {
         </main>
       )
       : (
-        <main className='grid grid-cols-1 gap-6 p-10 lg:grid-cols-3'>
-          <AvailableBooks />
-          <ReadingList />
-        </main>
+        <>
+          <main className='grid grid-cols-1 gap-6 p-10 lg:grid-cols-3'>
+            <AvailableBooks setShowMenu={setShowMenu} />
+
+            <ReadingList
+              className='p-5 rounded-md shadow-lg bg-slate-700/50 transition-[opacity] animation-fade-in hidden lg:block'
+              wrapperImagesClassName='grid grid-cols-2 gap-4 lg:grid-cols-1 xl:grid-cols-2'
+            />
+          </main>
+
+          <Sidebar
+          allowOutsideClick
+            element={
+              <ReadingList
+                className='transition-[opacity] animation-fade-in'
+                wrapperImagesClassName='grid grid-cols-2 gap-4'
+              />
+            }
+            setShow={setShowMenu}
+            show={showMenu}
+          />
+        </>
       )
   );
 };

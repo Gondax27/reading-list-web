@@ -1,0 +1,13 @@
+@keyframes sidebar-in {
+  0% {
+    transform: translateX(32rem);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animation-sidebar-in {
+  @apply transition-transform;
+  animation: sidebar-in 0.3s ease-in-out both;
+}

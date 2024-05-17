@@ -1,10 +1,15 @@
 import BookCard from '@/components/BookCard';
 
 import Filterbox from './Filterbox';
+import MenuIcon from '@/assets/MenuIcon';
 
 import { useLibraryStore } from '@/store/library';
 
-const AvailableBooks = () => {
+interface AvailableBooksProps {
+  setShowMenu: (state: boolean) => void;
+}
+
+const AvailableBooks = ({ setShowMenu }: AvailableBooksProps) => {
   const availableBooks = useLibraryStore(state => state.availableBooks);
   const readingList = useLibraryStore(state => state.readingList);
   const addReadingBook = useLibraryStore(state => state.addReadingBook);
@@ -12,9 +17,20 @@ const AvailableBooks = () => {
   return (
     <section className='col-span-1 lg:col-span-2'>
       <header className='mb-6'>
-        <h1 className='font-mono text-4xl font-bold text-white'>
-          {availableBooks.length} Libros disponibles
-        </h1>
+       <div className='flex items-center justify-between gap-4'>
+          <h1 className='font-mono text-4xl font-bold text-white'>
+            {availableBooks.length} Libros disponibles
+          </h1>
+
+          {readingList.length > 0 && (
+            <button
+              className='block px-2 py-1 text-white border rounded-md lg:hidden'
+              onClick={() => setShowMenu(true)}
+            >
+              <MenuIcon className='size-6' />
+            </button>
+          )}
+       </div>
 
         {readingList.length > 0 && (
           <h2 className='mt-1 font-mono text-xl text-white'>
