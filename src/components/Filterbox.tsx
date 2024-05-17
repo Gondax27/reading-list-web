@@ -9,8 +9,8 @@ const Filterbox = () => {
   } = useFilterbox();
 
   return (
-    <section className='grid w-full grid-cols-3 gap-4 mt-4'>
-      <search className='w-full'>
+    <section className='grid w-full grid-cols-1 gap-4 mt-4 sm:grid-cols-2 md:grid-cols-3'>
+      <search className='w-full col-span-2 md:col-span-1'>
         <label className='mb-2 font-mono text-white text-md'>Buscar</label>
         <input
           type='text'
@@ -21,7 +21,7 @@ const Filterbox = () => {
         />
       </search>
 
-      <div className='w-full'>
+      <div className='w-full col-span-2 sm:col-span-1'>
         <label className='mb-2 font-mono text-white text-md'>Filtro por Categoría</label>
         <Select
           className='font-mono'
@@ -31,7 +31,7 @@ const Filterbox = () => {
         />
       </div>
 
-      <div className='w-full'>
+      <div className='w-full col-span-2 sm:col-span-1'>
         <label className='mb-2 font-mono text-white text-md'>Filtro por Autor</label>
         <Select
           className='font-mono'

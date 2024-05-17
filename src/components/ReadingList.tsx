@@ -8,8 +8,15 @@ const ReadingList = () => {
 
   return (
     readingList.length > 0 && (
-      <section className='p-5 rounded-md shadow-lg bg-slate-700/50'>
-        <h2 className='font-mono text-3xl font-semibold text-center text-white'>Lista de Lectura</h2>
+      <section className='p-5 rounded-md shadow-lg bg-slate-700/50 transition-[opacity] animation-fade-in'>
+        <h2
+          style={{ whiteSpace: 'nowrap' }}
+          className='max-w-full overflow-hidden font-mono text-3xl font-semibold text-center text-white text-ellipsis text-nowrap'
+          title='Lista de Lectura'
+        >
+          Lista de Lectura
+        </h2>
+
         <hr className='mt-3 mb-4 border-dashed' />
 
         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-2'>
