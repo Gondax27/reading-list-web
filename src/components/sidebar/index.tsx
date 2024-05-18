@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 
 import useBreakpoint from '@/hooks/useBreakpoints';
 
@@ -15,6 +15,7 @@ interface SidebarProps {
 
 const SidebarElement = ({ allowOutsideClick, element, show, setShow }: SidebarProps) => {
   const breakpoint = useBreakpoint();
+  const isSmallDisplay = useMemo(() => ['xs', 'sm', 'md'].includes(breakpoint || ''), [breakpoint]);
 
   useEffect(() => {
     if (show) document.body.style.overflow = 'hidden';
@@ -22,9 +23,8 @@ const SidebarElement = ({ allowOutsideClick, element, show, setShow }: SidebarPr
   }, [show]);
 
   useEffect(() => {
-    if (['lg', 'xl', '2xl'].includes(breakpoint || '') && show) setShow(false);
-  }, [breakpoint]); // eslint-disable-line
-  
+    if (!isSmallDisplay && show) setShow(false);
+  }, [isSmallDisplay]); // eslint-disable-line
 
   const handleClose = useCallback((ev: React.MouseEvent) => {
     ev.stopPropagation();
