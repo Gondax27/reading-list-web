@@ -19,7 +19,7 @@ const App = () => {
       : (
         <>
           <main className='grid grid-cols-1 gap-6 p-10 lg:grid-cols-3'>
-            <AvailableBooks setShowMenu={setShowMenu} />
+            <AvailableBooks />
 
             <ReadingList
               className='p-5 rounded-md shadow-lg bg-slate-700/50 transition-[opacity] animation-fade-in hidden lg:block'

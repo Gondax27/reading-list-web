@@ -1,8 +1,14 @@
 ## Reading Book List Web
-Aplicación que se realiza con el fin de diseñar e implementar una pequeña aplicación web de lista de libros empleando el stack
-de desarrollo empleado por la organización de Jelou AI.
 
 ![FotoAPP](public/FotoApp.webp)
+
+Aplicación que se realiza con el fin de diseñar e implementar una pequeña aplicación web de lista de libros empleando el siguiente Stack de desarrollo:
+- React.js y Vite.js
+- Tanstack Query (React Query)
+- Zustand
+- TypeScript
+- TailwindCSS
+
 
 ## Primeros Pasos
 

@@ -4,15 +4,14 @@ import Filterbox from './Filterbox';
 import MenuIcon from '@/assets/MenuIcon';
 
 import { useLibraryStore } from '@/store/library';
+import { useUIStore } from '@/store/ui';
 
-interface AvailableBooksProps {
-  setShowMenu: (state: boolean) => void;
-}
-
-const AvailableBooks = ({ setShowMenu }: AvailableBooksProps) => {
+const AvailableBooks = () => {
   const availableBooks = useLibraryStore(state => state.availableBooks);
   const readingList = useLibraryStore(state => state.readingList);
+
   const addReadingBook = useLibraryStore(state => state.addReadingBook);
+  const setShowMenu = useUIStore(state => state.setShowMenu);
 
   return (
     <section className='col-span-1 lg:col-span-2'>

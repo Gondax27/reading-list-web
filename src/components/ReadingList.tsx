@@ -1,6 +1,9 @@
+import { useEffect } from 'react';
+
 import BookCard from '@/components/BookCard';
 
 import { useLibraryStore } from '@/store/library';
+import { useUIStore } from '@/store/ui';
 
 interface ReadingListProps {
   className: string;
@@ -9,8 +12,15 @@ interface ReadingListProps {
 
 const ReadingList = ({ className, wrapperImagesClassName }: ReadingListProps) => {
   const readingList = useLibraryStore(state => state.readingList);
+  const showMenu = useUIStore(state => state.showMenu);
+  
   const removeReadingBook = useLibraryStore(state => state.removeReadingBook);
+  const setShowMenu = useUIStore(state => state.setShowMenu);
 
+  useEffect(() => {
+    if (readingList.length === 0 && showMenu) setShowMenu(false);
+  }, [readingList.length]) // eslint-disable-line
+  
   return (
     readingList.length > 0 && (
       <section className={className}>
