@@ -59,21 +59,30 @@ flowchart TD
 
 ## 3. Especificación Detallada por Módulo
 
-### 3.1 Sincronización de Filtros en la URL (`URLSearchParams`)
+### 3.1 Sincronización de Filtros en la URL (`nuqs`)
 
-- **Objetivo**: Permitir enlaces compartibles y navegación con el historial del navegador (*Atrás* / *Adelante*).
-- **Parámetros soportados**:
-  - `q`: Texto de búsqueda libre (`search`).
-  - `subject`: Clave de materia/género.
-  - `lang`: Idioma ISO 639-2.
-  - `sort`: Criterio de ordenamiento.
-  - `author`: Búsqueda por autor.
-  - `from` / `to`: Rango de años de publicación.
-  - `ebook`: Disponibilidad de ebook.
+- **Objetivo**: Permitir enlaces compartibles, sincronización reactiva de filtros y navegación natural con el historial del navegador (*Atrás* / *Adelante*).
+- **Librería seleccionada**: [`nuqs`](https://nuqs.47ng.com/) (versión `2.10.1`) con `NuqsAdapter` (`nuqs/adapters/react`).
+- **Esquema de Parsers (`filterParsers.ts`)**:
+  ```ts
+  import { parseAsString, parseAsStringEnum } from 'nuqs';
+  import type { EbookAccess, LibrarySort } from '@/types/library';
+
+  export const filterParsers = {
+    search: parseAsString.withDefault(''),
+    subject: parseAsString.withDefault(''),
+    author: parseAsString.withDefault(''),
+    language: parseAsString.withDefault(''),
+    sort: parseAsStringEnum<LibrarySort>(['relevance', 'new', 'old', 'random']).withDefault('relevance'),
+    yearFrom: parseAsString.withDefault(''),
+    yearTo: parseAsString.withDefault(''),
+    ebookAccess: parseAsStringEnum<EbookAccess>(['', 'public', 'borrowable', 'no_ebook']).withDefault(''),
+  };
+  ```
 - **Implementación**:
-  - Extender `useFilterbox` para inicializar el estado a partir de `window.location.search`.
-  - Actualizar la URL de forma *debounced* mediante `window.history.replaceState` (para evitar saturar el historial durante el tipeo).
-  - Escuchar eventos `popstate` para sincronizar el store cuando el usuario use las flechas del navegador.
+  - Envolver la aplicación en `src/main.tsx` con `<NuqsAdapter>`.
+  - Integrar `useQueryStates(filterParsers, { history: 'replace', throttleMs: 300 })` dentro de `useFilterbox`.
+  - Sincronizar de forma atómica y bidireccional los parámetros de la URL con el store de Zustand `useLibraryStore` sin provocar bucles de re-renderizado.
 
 ---
 

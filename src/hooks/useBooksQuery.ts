@@ -32,11 +32,9 @@ const useBooksQuery = () => {
   );
 
   const totalFound = booksQuery.data?.pages[0]?.numFound ?? 0;
-  const filtersKey = JSON.stringify(filters);
-
   useEffect(() => {
     syncBooksFromQuery([], 0);
-  }, [filtersKey, syncBooksFromQuery]);
+  }, [filters, syncBooksFromQuery]);
 
   useEffect(() => {
     if (booksQuery.data) {
