@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Popover,
-  PopoverClose,
   PopoverContent,
   PopoverDescription,
   PopoverHeader,
@@ -280,19 +279,6 @@ const Filterbox = () => {
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className='border-t border-border pt-3'>
-              <PopoverClose asChild>
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='sm'
-                  className='w-full font-mono text-xs'
-                >
-                  Aplicar filtros
-                </Button>
-              </PopoverClose>
             </div>
           </PopoverContent>
         </Popover>

@@ -1,6 +1,7 @@
 import { BookmarkPlus, Info, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
+import BookCoverImage from '@/components/BookCoverImage';
 import BookDetailDialog from '@/components/BookDetailDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,8 +23,6 @@ interface BookCardProps {
   handleChangeBook: (book: Book) => void;
 }
 
-const PLACEHOLDER_COVER = 'https://placehold.co/400x600/1e293b/ffffff?text=Sin+Portada';
-
 const BookCard = ({ book, type, idx, handleChangeBook }: BookCardProps) => {
   const [detailsOpen, setDetailsOpen] = useState(false);
 
@@ -32,16 +31,11 @@ const BookCard = ({ book, type, idx, handleChangeBook }: BookCardProps) => {
 
   return (
     <>
-      <Card className='animation-fade-in group/card flex h-full flex-col overflow-hidden border border-border/80 bg-card pt-0 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg'>
-        <div className='relative aspect-[2/3] w-full overflow-hidden bg-muted/60 border-b border-border/50'>
-          <img
+      <Card className='animation-fade-in flex h-full flex-col overflow-hidden border border-border/80 bg-card pt-0 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg'>
+        <div className='relative aspect-[2/3] w-full overflow-hidden border-b border-border/50'>
+          <BookCoverImage
             src={book.cover}
             alt={`Portada de ${book.title}`}
-            className='h-full w-full object-cover transition-transform duration-300 group-hover/card:scale-105'
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = PLACEHOLDER_COVER;
-            }}
             loading={loadingStrategy}
           />
         </div>

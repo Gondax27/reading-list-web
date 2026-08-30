@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useQueryStates } from 'nuqs';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { filterParsers } from '@/constants/filterParsers';
 import {
-  DEFAULT_LIBRARY_FILTERS,
   EBOOK_OPTIONS,
   LANGUAGE_OPTIONS,
   SORT_OPTIONS,
@@ -23,163 +24,192 @@ const findSelectedOption = (options: FilterOption[], value: string): FilterOptio
   options.find((option) => option.value === value) ?? options[0];
 
 const useFilterbox = () => {
-  const filters = useLibraryStore((state) => state.filters);
+  const [urlFilters, setUrlFilters] = useQueryStates(filterParsers, {
+    history: 'replace',
+    throttleMs: 350,
+  });
+
   const setFilters = useLibraryStore((state) => state.setFilters);
 
-  const [searchInput, setSearchInput] = useState(filters.search);
-  const [authorInput, setAuthorInput] = useState(filters.author);
+  const [searchInput, setSearchInput] = useState(urlFilters.search);
+  const [authorInput, setAuthorInput] = useState(urlFilters.author);
 
   const debouncedSearch = useDebouncedValue(searchInput);
   const debouncedAuthor = useDebouncedValue(authorInput);
 
   useEffect(() => {
-    const currentFilters = useLibraryStore.getState().filters;
-
-    if (currentFilters.search === debouncedSearch && currentFilters.author === debouncedAuthor) {
-      return;
+    if (urlFilters.search !== debouncedSearch || urlFilters.author !== debouncedAuthor) {
+      setUrlFilters({
+        search: debouncedSearch,
+        author: debouncedAuthor,
+      });
     }
-
-    setFilters({
-      ...currentFilters,
-      search: debouncedSearch,
-      author: debouncedAuthor,
-    });
-  }, [debouncedSearch, debouncedAuthor, setFilters]);
+  }, [debouncedSearch, debouncedAuthor, urlFilters.search, urlFilters.author, setUrlFilters]);
 
   useEffect(() => {
-    setSearchInput(filters.search);
-  }, [filters.search]);
+    setSearchInput(urlFilters.search);
+  }, [urlFilters.search]);
 
   useEffect(() => {
-    setAuthorInput(filters.author);
-  }, [filters.author]);
+    setAuthorInput(urlFilters.author);
+  }, [urlFilters.author]);
 
-  const handleChangeFilter = (key: keyof LibraryFilter, value?: string) => {
-    if (key === 'search') {
-      setSearchInput(value || '');
-      return;
-    }
+  useEffect(() => {
+    setFilters(urlFilters as LibraryFilter);
+  }, [urlFilters, setFilters]);
 
-    if (key === 'author') {
-      setAuthorInput(value || '');
-      return;
-    }
+  const handleChangeFilter = useCallback(
+    (key: keyof LibraryFilter, value?: string) => {
+      if (key === 'search') {
+        setSearchInput(value || '');
+        return;
+      }
 
-    setFilters({
-      ...filters,
-      [key]: value || '',
-    });
-  };
+      if (key === 'author') {
+        setAuthorInput(value || '');
+        return;
+      }
 
-  const handleResetFilters = () => {
+      setUrlFilters({
+        [key]: value || '',
+      });
+    },
+    [setUrlFilters]
+  );
+
+  const handleResetFilters = useCallback(() => {
     setSearchInput('');
     setAuthorInput('');
-    setFilters({ ...DEFAULT_LIBRARY_FILTERS });
-  };
+    setUrlFilters({
+      search: '',
+      subject: '',
+      author: '',
+      language: '',
+      sort: 'relevance',
+      yearFrom: '',
+      yearTo: '',
+      ebookAccess: '',
+    });
+  }, [setUrlFilters]);
 
-  const handleResetSecondaryFilters = () => {
+  const handleResetSecondaryFilters = useCallback(() => {
     setAuthorInput('');
-    setFilters({
-      ...DEFAULT_LIBRARY_FILTERS,
-      search: searchInput,
+    setUrlFilters({
+      subject: '',
+      author: '',
+      language: '',
+      sort: 'relevance',
+      yearFrom: '',
+      yearTo: '',
+      ebookAccess: '',
     });
-  };
+  }, [setUrlFilters]);
 
-  const handleClearFilter = (key: FilterKey) => {
-    if (key === 'search') {
-      setSearchInput('');
-      setFilters({ ...filters, search: '' });
-      return;
-    }
+  const handleClearFilter = useCallback(
+    (key: FilterKey) => {
+      if (key === 'search') {
+        setSearchInput('');
+        setUrlFilters({ search: '' });
+        return;
+      }
 
-    if (key === 'author') {
-      setAuthorInput('');
-      setFilters({ ...filters, author: '' });
-      return;
-    }
+      if (key === 'author') {
+        setAuthorInput('');
+        setUrlFilters({ author: '' });
+        return;
+      }
 
-    if (key === 'yearRange') {
-      setFilters({ ...filters, yearFrom: '', yearTo: '' });
-      return;
-    }
+      if (key === 'yearRange') {
+        setUrlFilters({ yearFrom: '', yearTo: '' });
+        return;
+      }
 
-    setFilters({
-      ...filters,
-      [key]: key === 'sort' ? DEFAULT_LIBRARY_FILTERS.sort : '',
-    });
-  };
+      setUrlFilters({
+        [key]: key === 'sort' ? 'relevance' : '',
+      });
+    },
+    [setUrlFilters]
+  );
 
   const selectedLanguage = useMemo(
-    () => findSelectedOption(LANGUAGE_OPTIONS, filters.language),
-    [filters.language]
+    () => findSelectedOption(LANGUAGE_OPTIONS, urlFilters.language),
+    [urlFilters.language]
   );
 
   const selectedSubject = useMemo(
-    () => findSelectedOption(SUBJECT_OPTIONS, filters.subject),
-    [filters.subject]
+    () => findSelectedOption(SUBJECT_OPTIONS, urlFilters.subject),
+    [urlFilters.subject]
   );
 
   const selectedSort = useMemo(
-    () => findSelectedOption(SORT_OPTIONS, filters.sort),
-    [filters.sort]
+    () => findSelectedOption(SORT_OPTIONS, urlFilters.sort),
+    [urlFilters.sort]
   );
 
   const selectedEbook = useMemo(
-    () => findSelectedOption(EBOOK_OPTIONS, filters.ebookAccess),
-    [filters.ebookAccess]
+    () => findSelectedOption(EBOOK_OPTIONS, urlFilters.ebookAccess),
+    [urlFilters.ebookAccess]
   );
 
   const activeSecondaryCount = useMemo(() => {
     let count = 0;
-    if (filters.subject) count++;
-    if (filters.language) count++;
-    if (filters.sort && filters.sort !== 'relevance') count++;
-    if (filters.author) count++;
-    if (filters.yearFrom || filters.yearTo) count++;
-    if (filters.ebookAccess) count++;
+    if (urlFilters.subject) count++;
+    if (urlFilters.language) count++;
+    if (urlFilters.sort && urlFilters.sort !== 'relevance') count++;
+    if (authorInput) count++;
+    if (urlFilters.yearFrom || urlFilters.yearTo) count++;
+    if (urlFilters.ebookAccess) count++;
     return count;
-  }, [filters]);
+  }, [urlFilters, authorInput]);
 
   const activeFiltersList = useMemo<ActiveFilterItem[]>(() => {
     const list: ActiveFilterItem[] = [];
 
-    if (filters.search) {
-      list.push({ key: 'search', label: `Búsqueda: "${filters.search}"` });
+    if (searchInput) {
+      list.push({ key: 'search', label: `Búsqueda: "${searchInput}"` });
     }
 
-    if (filters.subject) {
+    if (urlFilters.subject) {
       list.push({ key: 'subject', label: `Materia: ${selectedSubject.label}` });
     }
 
-    if (filters.language) {
+    if (urlFilters.language) {
       list.push({ key: 'language', label: `Idioma: ${selectedLanguage.label}` });
     }
 
-    if (filters.sort && filters.sort !== 'relevance') {
+    if (urlFilters.sort && urlFilters.sort !== 'relevance') {
       list.push({ key: 'sort', label: `Orden: ${selectedSort.label}` });
     }
 
-    if (filters.author) {
-      list.push({ key: 'author', label: `Autor: "${filters.author}"` });
+    if (authorInput) {
+      list.push({ key: 'author', label: `Autor: "${authorInput}"` });
     }
 
-    if (filters.yearFrom && filters.yearTo) {
-      list.push({ key: 'yearRange', label: `Años: ${filters.yearFrom} - ${filters.yearTo}` });
-    } else if (filters.yearFrom) {
-      list.push({ key: 'yearFrom', label: `Desde: ${filters.yearFrom}` });
-    } else if (filters.yearTo) {
-      list.push({ key: 'yearTo', label: `Hasta: ${filters.yearTo}` });
+    if (urlFilters.yearFrom && urlFilters.yearTo) {
+      list.push({ key: 'yearRange', label: `Años: ${urlFilters.yearFrom} - ${urlFilters.yearTo}` });
+    } else if (urlFilters.yearFrom) {
+      list.push({ key: 'yearFrom', label: `Desde: ${urlFilters.yearFrom}` });
+    } else if (urlFilters.yearTo) {
+      list.push({ key: 'yearTo', label: `Hasta: ${urlFilters.yearTo}` });
     }
 
-    if (filters.ebookAccess) {
+    if (urlFilters.ebookAccess) {
       list.push({ key: 'ebookAccess', label: `Ebook: ${selectedEbook.label}` });
     }
 
     return list;
-  }, [filters, selectedSubject, selectedLanguage, selectedSort, selectedEbook]);
+  }, [
+    urlFilters,
+    searchInput,
+    authorInput,
+    selectedSubject,
+    selectedLanguage,
+    selectedSort,
+    selectedEbook,
+  ]);
 
   return {
-    filters: { ...filters, search: searchInput, author: authorInput },
+    filters: { ...urlFilters, search: searchInput, author: authorInput } as LibraryFilter,
     languageOptions: LANGUAGE_OPTIONS,
     subjectOptions: SUBJECT_OPTIONS,
     sortOptions: SORT_OPTIONS,

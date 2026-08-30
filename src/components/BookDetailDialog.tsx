@@ -1,5 +1,6 @@
 import { BookmarkPlus, Trash2 } from 'lucide-react';
 
+import BookCoverImage from '@/components/BookCoverImage';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,8 +21,6 @@ interface BookDetailDialogProps {
   onAdd?: (book: Book) => void;
   onRemove?: (book: Book) => void;
 }
-
-const PLACEHOLDER_COVER = 'https://placehold.co/400x600/1e293b/ffffff?text=Sin+Portada';
 
 const BookDetailDialog = ({
   book,
@@ -52,15 +51,9 @@ const BookDetailDialog = ({
         </DialogHeader>
 
         <div className='grid gap-6 sm:grid-cols-[140px_1fr]'>
-          <img
-            src={book.cover}
-            alt={`Portada de ${book.title}`}
-            className='mx-auto aspect-[2/3] w-full max-w-[140px] rounded-lg object-cover bg-muted'
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = PLACEHOLDER_COVER;
-            }}
-          />
+          <div className='mx-auto aspect-[2/3] w-full max-w-[140px] overflow-hidden rounded-lg'>
+            <BookCoverImage src={book.cover} alt={`Portada de ${book.title}`} loading='eager' />
+          </div>
 
           <div className='space-y-4'>
             <div className='flex flex-wrap gap-2'>
