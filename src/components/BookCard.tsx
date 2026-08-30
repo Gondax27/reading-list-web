@@ -21,8 +21,12 @@ const BookCard = ({ book, type, idx, handleChangeBook }: BookCardProps) => (
     <div className='relative flex flex-col'>
       <img
         src={book.cover}
-        alt={`Imagén del cover del libro ${book.title}`}
-        className='w-auto rounded-md h-96 aspect-[1594/2541] flex-auto'
+        alt={`Imagen del cover del libro ${book.title}`}
+        className='w-auto rounded-md h-96 aspect-[1594/2541] flex-auto object-cover bg-slate-700'
+        onError={(e) => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = 'https://placehold.co/400x600/1e293b/ffffff?text=Sin+Portada';
+        }}
         loading={
           type === 'available-list' ? (idx > 7 ? 'lazy' : 'eager') : idx > 5 ? 'lazy' : 'eager'
         }
@@ -30,6 +34,7 @@ const BookCard = ({ book, type, idx, handleChangeBook }: BookCardProps) => (
 
       {type === 'reading-list' && (
         <button
+          type='button'
           className='absolute inline-flex items-center justify-center p-1 font-bold text-white transition-colors bg-red-600 rounded-md shadow-md top-2 right-2 hover:bg-red-400'
           onClick={() => handleChangeBook(book)}
         >

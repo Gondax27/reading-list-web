@@ -45,6 +45,7 @@ const SidebarElement = ({ allowOutsideClick, element, show, setShow }: SidebarPr
         <aside className='animation-sidebar-in absolute inset-y-0 right-0 w-full sm:w-[35rem] z-[4] bg-slate-800 p-8 !overflow-y-auto h-dvh'>
           <header className='flex items-start justify-end w-full'>
             <button
+              type='button'
               className='p-1 text-white hover:text-purple-700 transition-[border,color] w-fit border rounded-md hover:border-purple-700 shadow-md'
               onClick={handleClose}
             >
