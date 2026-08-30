@@ -1,23 +1,19 @@
 import AvailableBooks from '@/components/AvailableBooks';
 import ReadingList from '@/components/ReadingList';
-import Spinner from '@/components/Spinner';
-import useBooksQuery from '@/hooks/useBooksQuery';
+import { useUIStore } from '@/store/ui';
 import Sidebar from './components/sidebar';
 
 const App = () => {
-  const { booksQuery, showMenu, setShowMenu } = useBooksQuery();
+  const showMenu = useUIStore((state) => state.showMenu);
+  const setShowMenu = useUIStore((state) => state.setShowMenu);
 
-  return booksQuery.isLoading ? (
-    <main className='grid w-full min-h-dvh place-content-center'>
-      <Spinner />
-    </main>
-  ) : (
+  return (
     <>
       <main className='grid grid-cols-1 gap-6 p-10 lg:grid-cols-3'>
         <AvailableBooks />
 
         <ReadingList
-          className='p-5 rounded-md shadow-lg bg-slate-700/50 transition-[opacity] animation-fade-in hidden lg:block'
+          className='p-6 rounded-2xl shadow-lg bg-card/60 backdrop-blur-md border border-border transition-[opacity] animation-fade-in hidden lg:block'
           wrapperImagesClassName='grid grid-cols-2 gap-4 lg:grid-cols-1 xl:grid-cols-2'
         />
       </main>

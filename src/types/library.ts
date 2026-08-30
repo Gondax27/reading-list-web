@@ -45,21 +45,35 @@ export interface FilterOption {
   value: string;
 }
 
+export type LibrarySort = 'relevance' | 'new' | 'old' | 'random';
+
+export type EbookAccess = '' | 'public' | 'borrowable' | 'no_ebook';
+
 export interface LibraryFilter {
-  category: string;
   search: string;
+  subject: string;
   author: string;
+  language: string;
+  sort: LibrarySort;
+  yearFrom: string;
+  yearTo: string;
+  ebookAccess: EbookAccess;
+}
+
+export interface BooksPageResult {
+  books: Book[];
+  numFound: number;
+  start: number;
+  hasMore: boolean;
 }
 
 export interface LibraryStore {
-  allBooks: Book[];
   availableBooks: Book[];
   readingList: Book[];
-  authorList: FilterOption[];
-  categoryList: FilterOption[];
   filters: LibraryFilter;
-  initializeBooks: (books: Book[]) => void;
+  totalFound: number;
+  setFilters: (filters: LibraryFilter) => void;
+  syncBooksFromQuery: (books: Book[], totalFound: number) => void;
   addReadingBook: (book: Book) => void;
   removeReadingBook: (book: Book) => void;
-  onApplyFilter: (filters: LibraryFilter) => void;
 }

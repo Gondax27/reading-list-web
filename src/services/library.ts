@@ -1,7 +1,133 @@
-import type { Book, OpenLibraryDoc, OpenLibrarySearchResponse } from '@/types/library';
+import {
+  DEFAULT_SUBJECT_QUERY,
+  LANGUAGE_LANG_PARAM,
+  PAGE_SIZE,
+  SEARCH_FIELDS,
+} from '@/constants/openLibraryFilters';
+import type {
+  Book,
+  BooksPageResult,
+  LibraryFilter,
+  OpenLibraryDoc,
+  OpenLibrarySearchResponse,
+} from '@/types/library';
 
-export const OPEN_LIBRARY_API_URL =
-  'https://openlibrary.org/search.json?q=language:spa+OR+language:eng&subject=fiction&fields=key,title,author_name,first_publish_year,number_of_pages_median,isbn,cover_i,subject,first_sentence&limit=30';
+const OPEN_LIBRARY_BASE_URL = 'https://openlibrary.org/search.json';
+
+const FETCH_HEADERS = {
+  Accept: 'application/json',
+  'User-Agent': 'reading-list-web/1.0 (https://github.com/Gondax27/reading-list-web)',
+};
+
+interface OpenLibraryErrorResponse {
+  detail?: unknown;
+}
+
+/**
+ * Escapa caracteres especiales de Solr en valores de búsqueda
+ */
+export const escapeSolrValue = (value: string): string =>
+  value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+
+/**
+ * Resuelve el rango de años, corrigiendo rangos invertidos
+ */
+export const resolveYearRange = (
+  yearFrom: string,
+  yearTo: string
+): { from: string; to: string } | null => {
+  if (!yearFrom && !yearTo) {
+    return null;
+  }
+
+  if (yearFrom && yearTo && Number(yearFrom) > Number(yearTo)) {
+    return { from: yearTo, to: yearFrom };
+  }
+
+  return {
+    from: yearFrom || '*',
+    to: yearTo || '*',
+  };
+};
+
+/**
+ * Construye la cláusula de autor según la guía oficial (`author:`).
+ * @see https://openlibrary.org/search/howto/more
+ */
+export const buildAuthorClause = (author: string): string => {
+  const value = escapeSolrValue(author.trim());
+
+  if (value.includes(' ')) {
+    return `author:"${value}"`;
+  }
+
+  return `author:${value}`;
+};
+
+/**
+ * Construye la cláusula de materia con `subject:` (búsqueda difusa, método principal).
+ * @see https://openlibrary.org/search/howto — Subject Search
+ */
+export const buildSubjectClause = (subject: string): string => {
+  if (!subject) {
+    return DEFAULT_SUBJECT_QUERY;
+  }
+
+  return `subject:${subject}`;
+};
+
+/**
+ * Construye la query Solr a partir de los filtros del usuario
+ */
+export const buildOpenLibraryQuery = (filters: LibraryFilter): string => {
+  const parts: string[] = [buildSubjectClause(filters.subject)];
+
+  if (filters.language) {
+    parts.push(`language:${filters.language}`);
+  }
+
+  if (filters.author.trim()) {
+    parts.push(buildAuthorClause(filters.author));
+  }
+
+  if (filters.search.trim().length >= 3) {
+    parts.push(escapeSolrValue(filters.search.trim()));
+  }
+
+  const yearRange = resolveYearRange(filters.yearFrom, filters.yearTo);
+  if (yearRange) {
+    parts.push(`first_publish_year:[${yearRange.from} TO ${yearRange.to}]`);
+  }
+
+  if (filters.ebookAccess) {
+    parts.push(`ebook_access:${filters.ebookAccess}`);
+  }
+
+  return parts.join(' AND ');
+};
+
+/**
+ * Construye la URL de búsqueda paginada de Open Library
+ */
+export const buildOpenLibrarySearchUrl = (filters: LibraryFilter, offset: number): string => {
+  const params = new URLSearchParams({
+    q: buildOpenLibraryQuery(filters),
+    fields: SEARCH_FIELDS,
+    limit: String(PAGE_SIZE),
+    offset: String(offset),
+  });
+
+  if (filters.sort !== 'relevance') {
+    params.set('sort', filters.sort);
+  }
+
+  const langParam = filters.language ? LANGUAGE_LANG_PARAM[filters.language] : undefined;
+  if (langParam) {
+    params.set('lang', langParam);
+  }
+
+  return `${OPEN_LIBRARY_BASE_URL}?${params.toString()}`;
+};
 
 /**
  * Normaliza los temas o subjects devueltos por Open Library a una categoría en español
@@ -99,36 +225,52 @@ export const transformOpenLibraryDocToBook = (doc: OpenLibraryDoc): Book => {
   };
 };
 
+const isOpenLibraryError = (
+  payload: OpenLibrarySearchResponse | OpenLibraryErrorResponse
+): payload is OpenLibraryErrorResponse => 'detail' in payload && !('docs' in payload);
+
 /**
- * Solicitud que obtiene los libros disponibles desde Open Library
+ * Solicita una página de libros desde Open Library
  */
-export const requestBooks = async (): Promise<Book[]> => {
-  try {
-    const request = await fetch(OPEN_LIBRARY_API_URL, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'User-Agent': 'reading-list-web/1.0 (https://github.com/Gondax27/reading-list-web)',
-      },
-    });
+export const requestBooksPage = async (
+  filters: LibraryFilter,
+  offset = 0
+): Promise<BooksPageResult> => {
+  const url = buildOpenLibrarySearchUrl(filters, offset);
 
-    if (!request.ok) {
-      return Promise.reject(new Error(`Error fetching books: ${request.statusText}`));
-    }
+  const request = await fetch(url, {
+    method: 'GET',
+    headers: FETCH_HEADERS,
+  });
 
-    const response: OpenLibrarySearchResponse = await request.json();
-
-    if (!response.docs || !Array.isArray(response.docs)) {
-      return Promise.resolve([]);
-    }
-
-    const formatBooks: Book[] = response.docs
-      .filter((doc) => Boolean(doc?.title))
-      .map(transformOpenLibraryDocToBook);
-
-    return Promise.resolve(formatBooks);
-  } catch (error) {
-    console.error('Failed to request books from Open Library:', error);
-    return Promise.reject(error);
+  if (!request.ok) {
+    throw new Error(`Error fetching books: ${request.statusText}`);
   }
+
+  const payload = (await request.json()) as OpenLibrarySearchResponse | OpenLibraryErrorResponse;
+
+  if (isOpenLibraryError(payload)) {
+    throw new Error('La consulta de Open Library no es válida. Revisa los filtros aplicados.');
+  }
+
+  const response = payload;
+
+  if (!response.docs || !Array.isArray(response.docs)) {
+    return { books: [], numFound: 0, start: offset, hasMore: false };
+  }
+
+  const books = response.docs
+    .filter((doc) => Boolean(doc?.title))
+    .map(transformOpenLibraryDocToBook);
+
+  const numFound = response.numFound ?? 0;
+  const start = response.start ?? offset;
+  const fetchedCount = response.docs.length;
+
+  return {
+    books,
+    numFound,
+    start,
+    hasMore: start + fetchedCount < numFound,
+  };
 };

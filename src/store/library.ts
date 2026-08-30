@@ -1,65 +1,49 @@
 import { create } from 'zustand';
+
+import { DEFAULT_LIBRARY_FILTERS } from '@/constants/openLibraryFilters';
 import type { Book, LibraryFilter, LibraryStore } from '@/types/library';
-import { buildAuthors, buildCategories, buildStateBooks } from '@/utils/library';
+import {
+  buildAvailableBooks,
+  getReadingListFromStorage,
+  persistReadingList,
+} from '@/utils/library';
 
 export const useLibraryStore = create<LibraryStore>((set, get) => ({
-  /** States */
-  allBooks: [],
   availableBooks: [],
-  readingList: [],
-  authorList: [],
-  categoryList: [],
-  filters: { category: '', search: '', author: '' },
+  readingList: getReadingListFromStorage(),
+  filters: { ...DEFAULT_LIBRARY_FILTERS },
+  totalFound: 0,
 
-  /** Funciones */
-  initializeBooks: (books: Book[]) => {
-    const { newAvailableBooks, newReadingList } = buildStateBooks(books);
-    const authorList = buildAuthors(books);
-    const categoryList = buildCategories(books);
+  setFilters: (filters: LibraryFilter) => {
+    set({ filters });
+  },
+
+  syncBooksFromQuery: (books: Book[], totalFound: number) => {
+    const readingList = get().readingList;
 
     set({
-      allBooks: books,
-      availableBooks: newAvailableBooks,
-      readingList: newReadingList,
-      authorList,
-      categoryList,
+      availableBooks: buildAvailableBooks(books, readingList),
+      totalFound,
     });
   },
+
   addReadingBook: (book: Book) => {
     const newReadingList = [...get().readingList, book];
-    const localReading = newReadingList.map((book) => book.ISBN);
-    localStorage.setItem('reading-list', JSON.stringify(localReading));
+    persistReadingList(newReadingList);
 
     set((prevState) => ({
-      ...prevState,
-      availableBooks: prevState.availableBooks.filter((_book) => _book.ISBN !== book.ISBN),
       readingList: newReadingList,
+      availableBooks: prevState.availableBooks.filter((_book) => _book.ISBN !== book.ISBN),
     }));
   },
+
   removeReadingBook: (book: Book) => {
     const newReadingList = get().readingList.filter((_book) => _book.ISBN !== book.ISBN);
-    const localReading = newReadingList.map((book) => book.ISBN);
-    localStorage.setItem('reading-list', JSON.stringify(localReading));
+    persistReadingList(newReadingList);
 
     set((prevState) => ({
-      ...prevState,
-      availableBooks: [...prevState.availableBooks, book],
       readingList: newReadingList,
-    }));
-  },
-  onApplyFilter: (filters: LibraryFilter) => {
-    const localBooks = get().readingList.map((book) => book.ISBN);
-
-    set((prevState) => ({
-      ...prevState,
-      filters,
-      availableBooks: prevState.allBooks.filter(
-        (book) =>
-          !localBooks.includes(book.ISBN) &&
-          book.title.toLowerCase().includes(filters.search.toLowerCase()) &&
-          book.genre.includes(filters.category) &&
-          book.author.name.includes(filters.author)
-      ),
+      availableBooks: buildAvailableBooks([book, ...prevState.availableBooks], newReadingList),
     }));
   },
 }));

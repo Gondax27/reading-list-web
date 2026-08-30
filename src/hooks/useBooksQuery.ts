@@ -1,32 +1,64 @@
-import { useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
-import { requestBooks } from '@/services/library';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo } from 'react';
+
+import { PAGE_SIZE } from '@/constants/openLibraryFilters';
+import { requestBooksPage } from '@/services/library';
 import { useLibraryStore } from '@/store/library';
 import { useUIStore } from '@/store/ui';
+import { dedupeBooksByIsbn } from '@/utils/library';
 
 const useBooksQuery = () => {
   const showMenu = useUIStore((state) => state.showMenu);
   const setShowMenu = useUIStore((state) => state.setShowMenu);
-  const initializeBooks = useLibraryStore((state) => state.initializeBooks);
+  const filters = useLibraryStore((state) => state.filters);
+  const syncBooksFromQuery = useLibraryStore((state) => state.syncBooksFromQuery);
 
-  const booksQuery = useQuery({
-    queryKey: ['books'],
-    queryFn: requestBooks,
+  const booksQuery = useInfiniteQuery({
+    queryKey: ['books', filters],
+    queryFn: ({ pageParam = 0 }) => requestBooksPage(filters, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.hasMore) {
+        return undefined;
+      }
+
+      return lastPage.start + PAGE_SIZE;
+    },
   });
 
+  const allFetchedBooks = useMemo(
+    () => dedupeBooksByIsbn(booksQuery.data?.pages.flatMap((page) => page.books) ?? []),
+    [booksQuery.data]
+  );
+
+  const totalFound = booksQuery.data?.pages[0]?.numFound ?? 0;
+  const filtersKey = JSON.stringify(filters);
+
   useEffect(() => {
-    if (booksQuery.data && booksQuery.data.length > 0) {
-      initializeBooks(booksQuery.data);
+    syncBooksFromQuery([], 0);
+  }, [filtersKey, syncBooksFromQuery]);
+
+  useEffect(() => {
+    if (booksQuery.data) {
+      syncBooksFromQuery(allFetchedBooks, totalFound);
     }
-  }, [booksQuery.data, initializeBooks]);
+  }, [allFetchedBooks, totalFound, booksQuery.data, syncBooksFromQuery]);
+
+  const fetchNextPage = useCallback(() => {
+    if (booksQuery.hasNextPage && !booksQuery.isFetchingNextPage) {
+      booksQuery.fetchNextPage();
+    }
+  }, [booksQuery]);
 
   return {
-    /** States */
     booksQuery,
     showMenu,
-
-    /** Funciones */
     setShowMenu,
+    fetchNextPage,
+    hasNextPage: booksQuery.hasNextPage ?? false,
+    isFetchingNextPage: booksQuery.isFetchingNextPage,
+    isRefetching: booksQuery.isFetching && !booksQuery.isFetchingNextPage,
+    totalFound,
   };
 };
 

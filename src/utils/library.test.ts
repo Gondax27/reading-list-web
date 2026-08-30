@@ -1,7 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import * as libraryService from '@/services/library';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { Book } from '@/types/library';
-import { buildAuthors, buildCategories, buildStateBooks, getBooks } from './library';
+import {
+  buildAvailableBooks,
+  dedupeBooksByIsbn,
+  getReadingListFromStorage,
+  persistReadingList,
+} from './library';
 
 const sampleBooks: Book[] = [
   {
@@ -41,56 +45,41 @@ describe('Library Utils', () => {
     localStorage.clear();
   });
 
-  describe('buildAuthors', () => {
-    it('extracts unique authors and includes "Todos" option at index 0', () => {
-      const authors = buildAuthors(sampleBooks);
-      expect(authors).toHaveLength(3); // "Todos", "J.R.R. Tolkien", "Isaac Asimov"
-      expect(authors[0]).toEqual({ label: 'Todos', value: '' });
-      expect(authors[1]).toEqual({ label: 'J.R.R. Tolkien', value: 'J.R.R. Tolkien' });
-      expect(authors[2]).toEqual({ label: 'Isaac Asimov', value: 'Isaac Asimov' });
+  describe('persistReadingList / getReadingListFromStorage', () => {
+    it('persists and restores full book objects', () => {
+      persistReadingList([sampleBooks[0]]);
+      expect(getReadingListFromStorage()).toHaveLength(1);
+      expect(getReadingListFromStorage()[0].title).toBe('El Señor de los Anillos');
+    });
+
+    it('returns empty array for legacy ISBN-only storage format', () => {
+      localStorage.setItem('reading-list', JSON.stringify(['ISBN-001']));
+      expect(getReadingListFromStorage()).toEqual([]);
     });
   });
 
-  describe('buildCategories', () => {
-    it('extracts unique genres and includes "Todas" option at index 0', () => {
-      const categories = buildCategories(sampleBooks);
-      expect(categories).toHaveLength(3); // "Todas", "Fantasía", "Ciencia Ficción"
-      expect(categories[0]).toEqual({ label: 'Todas', value: '' });
-      expect(categories[1]).toEqual({ label: 'Fantasía', value: 'Fantasía' });
-      expect(categories[2]).toEqual({ label: 'Ciencia Ficción', value: 'Ciencia Ficción' });
+  describe('buildAvailableBooks', () => {
+    it('excludes books already in the reading list', () => {
+      const available = buildAvailableBooks(sampleBooks, [sampleBooks[1]]);
+
+      expect(available).toHaveLength(2);
+      expect(available.map((book) => book.ISBN)).toEqual(['ISBN-001', 'ISBN-003']);
+    });
+
+    it('removes duplicate ISBNs from fetched pages', () => {
+      const available = buildAvailableBooks([sampleBooks[0], sampleBooks[0]], []);
+
+      expect(available).toHaveLength(1);
     });
   });
 
-  describe('buildStateBooks', () => {
-    it('separates books into available and reading list based on localStorage', () => {
-      localStorage.setItem('reading-list', JSON.stringify(['ISBN-002']));
+  describe('dedupeBooksByIsbn', () => {
+    it('keeps first occurrence of each ISBN', () => {
+      const deduped = dedupeBooksByIsbn([sampleBooks[0], sampleBooks[2], sampleBooks[0]]);
 
-      const { newAvailableBooks, newReadingList } = buildStateBooks(sampleBooks);
-
-      expect(newReadingList).toHaveLength(1);
-      expect(newReadingList[0].title).toBe('Fundación');
-      expect(newAvailableBooks).toHaveLength(2);
-      expect(newAvailableBooks.map((b) => b.ISBN)).toEqual(['ISBN-001', 'ISBN-003']);
-    });
-
-    it('places all books in available when localStorage is empty', () => {
-      const { newAvailableBooks, newReadingList } = buildStateBooks(sampleBooks);
-
-      expect(newReadingList).toHaveLength(0);
-      expect(newAvailableBooks).toHaveLength(3);
-    });
-  });
-
-  describe('getBooks', () => {
-    it('invokes requestBooks and passes result to initializeBooks callback', async () => {
-      const spyRequest = vi.spyOn(libraryService, 'requestBooks').mockResolvedValue(sampleBooks);
-
-      const mockInit = vi.fn();
-      const result = await getBooks(mockInit);
-
-      expect(spyRequest).toHaveBeenCalled();
-      expect(mockInit).toHaveBeenCalledWith(sampleBooks);
-      expect(result).toEqual(sampleBooks);
+      expect(deduped).toHaveLength(2);
+      expect(deduped[0].ISBN).toBe('ISBN-001');
+      expect(deduped[1].ISBN).toBe('ISBN-003');
     });
   });
 });
