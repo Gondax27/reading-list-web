@@ -1,13 +1,118 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { DEFAULT_LIBRARY_FILTERS } from '@/constants/openLibraryFilters';
 import type { OpenLibraryDoc, OpenLibrarySearchResponse } from '@/types/library';
 import {
+  buildAuthorClause,
+  buildOpenLibraryQuery,
+  buildOpenLibrarySearchUrl,
+  buildSubjectClause,
+  escapeSolrValue,
   normalizeGenre,
-  OPEN_LIBRARY_API_URL,
-  requestBooks,
+  requestBooksPage,
+  resolveYearRange,
   transformOpenLibraryDocToBook,
 } from './library';
 
 describe('Open Library Service', () => {
+  describe('escapeSolrValue', () => {
+    it('escapes double quotes and backslashes in Solr values', () => {
+      expect(escapeSolrValue('Say "Hello"')).toBe('Say \\"Hello\\"');
+      expect(escapeSolrValue('path\\to')).toBe('path\\\\to');
+    });
+  });
+
+  describe('resolveYearRange', () => {
+    it('returns null when no years are provided', () => {
+      expect(resolveYearRange('', '')).toBeNull();
+    });
+
+    it('swaps inverted year ranges', () => {
+      expect(resolveYearRange('2020', '1990')).toEqual({ from: '1990', to: '2020' });
+    });
+  });
+
+  describe('buildAuthorClause', () => {
+    it('uses author: for single-token names', () => {
+      expect(buildAuthorClause('Tolkien')).toBe('author:Tolkien');
+    });
+
+    it('uses quoted author: for multi-word names', () => {
+      expect(buildAuthorClause('Gabriel Garcia')).toBe('author:"Gabriel Garcia"');
+    });
+  });
+
+  describe('buildSubjectClause', () => {
+    it('returns default fiction query when subject is empty', () => {
+      expect(buildSubjectClause('')).toBe('subject:fiction');
+    });
+
+    it('uses subject: fuzzy search for catalog values', () => {
+      expect(buildSubjectClause('fantasy')).toBe('subject:fantasy');
+    });
+  });
+
+  describe('buildOpenLibraryQuery', () => {
+    it('uses subject:fiction as default base query', () => {
+      expect(buildOpenLibraryQuery({ ...DEFAULT_LIBRARY_FILTERS })).toBe('subject:fiction');
+    });
+
+    it('combines language, author and search filters', () => {
+      const query = buildOpenLibraryQuery({
+        ...DEFAULT_LIBRARY_FILTERS,
+        subject: 'fantasy',
+        language: 'spa',
+        author: 'Tolkien',
+        search: 'hobbit',
+      });
+
+      expect(query).toContain('subject:fantasy');
+      expect(query).toContain('language:spa');
+      expect(query).toContain('author:Tolkien');
+      expect(query).toContain('hobbit');
+    });
+
+    it('adds year range and ebook access when provided', () => {
+      const query = buildOpenLibraryQuery({
+        ...DEFAULT_LIBRARY_FILTERS,
+        yearFrom: '1990',
+        yearTo: '2020',
+        ebookAccess: 'public',
+      });
+
+      expect(query).toContain('first_publish_year:[1990 TO 2020]');
+      expect(query).toContain('ebook_access:public');
+    });
+
+    it('ignores search terms shorter than 3 characters', () => {
+      const query = buildOpenLibraryQuery({
+        ...DEFAULT_LIBRARY_FILTERS,
+        search: 'ab',
+      });
+
+      expect(query).toBe('subject:fiction');
+    });
+  });
+
+  describe('buildOpenLibrarySearchUrl', () => {
+    it('includes pagination, sort and ISO 639-1 lang parameter', () => {
+      const url = buildOpenLibrarySearchUrl(
+        { ...DEFAULT_LIBRARY_FILTERS, sort: 'new', language: 'spa' },
+        30
+      );
+
+      expect(url).toContain('offset=30');
+      expect(url).toContain('limit=30');
+      expect(url).toContain('sort=new');
+      expect(url).toContain('lang=es');
+      expect(url).not.toContain('lang=spa');
+    });
+
+    it('omits sort when relevance is selected', () => {
+      const url = buildOpenLibrarySearchUrl({ ...DEFAULT_LIBRARY_FILTERS }, 0);
+      expect(url).not.toContain('sort=');
+    });
+  });
+
   describe('normalizeGenre', () => {
     it('returns "Ficción" when subjects array is empty or undefined', () => {
       expect(normalizeGenre()).toBe('Ficción');
@@ -98,7 +203,7 @@ describe('Open Library Service', () => {
     });
   });
 
-  describe('requestBooks', () => {
+  describe('requestBooksPage', () => {
     beforeEach(() => {
       vi.restoreAllMocks();
     });
@@ -107,10 +212,10 @@ describe('Open Library Service', () => {
       vi.unstubAllGlobals();
     });
 
-    it('fetches and maps books successfully from Open Library', async () => {
+    it('fetches and maps a paginated response from Open Library', async () => {
       const mockResponse: OpenLibrarySearchResponse = {
-        numFound: 1,
-        start: 0,
+        numFound: 100,
+        start: 30,
         docs: [
           {
             key: '/works/OL100W',
@@ -132,26 +237,64 @@ describe('Open Library Service', () => {
 
       vi.stubGlobal('fetch', mockFetch);
 
-      const books = await requestBooks();
+      const page = await requestBooksPage({ ...DEFAULT_LIBRARY_FILTERS }, 30);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        OPEN_LIBRARY_API_URL,
+        expect.stringContaining('offset=30'),
         expect.objectContaining({ method: 'GET' })
       );
-      expect(books).toHaveLength(1);
-      expect(books[0].title).toBe('Dune');
-      expect(books[0].genre).toBe('Ciencia Ficción');
+      expect(page.books).toHaveLength(1);
+      expect(page.books[0].title).toBe('Dune');
+      expect(page.numFound).toBe(100);
+      expect(page.hasMore).toBe(true);
+    });
+
+    it('returns hasMore false when all results have been fetched', async () => {
+      const mockResponse: OpenLibrarySearchResponse = {
+        numFound: 1,
+        start: 0,
+        docs: [{ key: '/works/OL1W', title: 'Book' }],
+      };
+
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockResponse),
+        })
+      );
+
+      const page = await requestBooksPage({ ...DEFAULT_LIBRARY_FILTERS }, 0);
+      expect(page.hasMore).toBe(false);
+    });
+
+    it('rejects when Open Library returns a validation error payload', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              detail: [{ msg: 'Invalid query' }],
+            }),
+        })
+      );
+
+      await expect(requestBooksPage({ ...DEFAULT_LIBRARY_FILTERS }, 0)).rejects.toThrow(
+        'La consulta de Open Library no es válida'
+      );
     });
 
     it('rejects when response is not ok', async () => {
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: false,
-        statusText: 'Service Unavailable',
-      });
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: false,
+          statusText: 'Service Unavailable',
+        })
+      );
 
-      vi.stubGlobal('fetch', mockFetch);
-
-      await expect(requestBooks()).rejects.toThrow();
+      await expect(requestBooksPage({ ...DEFAULT_LIBRARY_FILTERS }, 0)).rejects.toThrow();
     });
   });
 });

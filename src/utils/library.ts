@@ -1,64 +1,65 @@
-import { requestBooks } from '@/services/library';
-
 import type { Book } from '@/types/library';
 
+const READING_LIST_KEY = 'reading-list';
+
 /**
- * Función que obtiene todos los libros disponibles y los añade dentro del estado global
- * @param initializeBooks
- * @returns
+ * Lee la lista de lectura desde localStorage.
+ * Soporta el formato legado (array de ISBNs) y el nuevo (array de Book).
  */
-export const getBooks = async (initializeBooks: (books: Book[]) => void) => {
+export const getReadingListFromStorage = (): Book[] => {
   try {
-    const books = await requestBooks();
-    initializeBooks(books);
-    return Promise.resolve(books);
-  } catch (_error) {
-    return Promise.reject([]);
-  }
-};
+    const raw = JSON.parse(localStorage.getItem(READING_LIST_KEY) || '[]') as unknown;
 
-/**
- * Función que construye los libros disponibles y la lista de lectura dentro del state global de la app
- * @param books
- * @returns
- */
-export const buildStateBooks = (books: Book[]) => {
-  const localLibrary: string[] = JSON.parse(localStorage.getItem('reading-list') || '[]');
-  let newAvailableBooks: Book[] = [];
-  let newReadingList: Book[] = [];
-
-  for (let idx = 0; idx < books.length; idx++) {
-    const book = books[idx];
-
-    if (localLibrary.includes(book.ISBN)) {
-      newReadingList = [...newReadingList, book];
-      continue;
+    if (!Array.isArray(raw) || raw.length === 0) {
+      return [];
     }
 
-    newAvailableBooks = [...newAvailableBooks, book];
+    if (typeof raw[0] === 'string') {
+      return [];
+    }
+
+    return raw as Book[];
+  } catch {
+    return [];
   }
-
-  return { newAvailableBooks, newReadingList };
 };
 
 /**
- * Función que construye la lista de autores disponibles, de acuerdo a los libros ingresados
- * @param books
- * @returns
+ * Persiste la lista de lectura completa en localStorage
  */
-export const buildAuthors = (books: Book[]) => {
-  const allAuthors = [...new Set(books.map((book) => book.author.name))];
-  const authors = allAuthors.map((category) => ({ label: category, value: category }));
-  return [{ label: 'Todos', value: '' }, ...authors];
+export const persistReadingList = (readingList: Book[]): void => {
+  localStorage.setItem(READING_LIST_KEY, JSON.stringify(readingList));
 };
 
 /**
- * Función que construye la lista de categorías disponibles, de acuerdo a los libros ingresados
- * @param books
- * @returns
+ * Separa libros cargados de la API excluyendo los que ya están en la lista de lectura
  */
-export const buildCategories = (books: Book[]) => {
-  const allCategories = [...new Set(books.map((book) => book.genre))];
-  const categories = allCategories.map((category) => ({ label: category, value: category }));
-  return [{ label: 'Todas', value: '' }, ...categories];
+export const buildAvailableBooks = (books: Book[], readingList: Book[]): Book[] => {
+  const readingIsbns = new Set(readingList.map((book) => book.ISBN));
+  const seen = new Set<string>();
+
+  return books.filter((book) => {
+    if (readingIsbns.has(book.ISBN) || seen.has(book.ISBN)) {
+      return false;
+    }
+
+    seen.add(book.ISBN);
+    return true;
+  });
+};
+
+/**
+ * Elimina duplicados por ISBN preservando el orden de aparición
+ */
+export const dedupeBooksByIsbn = (books: Book[]): Book[] => {
+  const seen = new Set<string>();
+
+  return books.filter((book) => {
+    if (seen.has(book.ISBN)) {
+      return false;
+    }
+
+    seen.add(book.ISBN);
+    return true;
+  });
 };

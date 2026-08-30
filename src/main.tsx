@@ -1,7 +1,5 @@
-import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
@@ -12,8 +10,8 @@ import './index.css';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 60 * 24, // 24 Horas
-      gcTime: 1000 * 60 * 60 * 24 * 7, // 7 Días
+      staleTime: 1000 * 60 * 5, // 5 minutos de stale en memoria
+      gcTime: 1000 * 60 * 30, // 30 minutos de garbage collection
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       retry: 2,
@@ -22,19 +20,15 @@ const queryClient = new QueryClient({
   },
 });
 
-const persister = createSyncStoragePersister({
-  storage: window.localStorage,
-  key: 'READING_LIST_QUERY_CACHE',
-});
+const rootElement = document.getElementById('root');
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <PersistQueryClientProvider
-      client={queryClient}
-      persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 7 }}
-    >
-      <App />
-      <ReactQueryDevtools initialIsOpen={false} />
-    </PersistQueryClientProvider>
-  </React.StrictMode>
-);
+if (rootElement) {
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <App />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </React.StrictMode>
+  );
+}

@@ -1,5 +1,6 @@
+import { X } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo } from 'react';
-import CloseIcon from '@/assets/CloseIcon';
+import { Button } from '@/components/ui/button';
 import useBreakpoint from '@/hooks/useBreakpoints';
 
 import './styles.css';
@@ -22,7 +23,7 @@ const SidebarElement = ({ allowOutsideClick, element, show, setShow }: SidebarPr
 
   useEffect(() => {
     if (!isSmallDisplay && show) setShow(false);
-  }, [isSmallDisplay]); // eslint-disable-line
+  }, [isSmallDisplay, show, setShow]);
 
   const handleClose = useCallback(
     (ev: React.MouseEvent) => {
@@ -36,21 +37,24 @@ const SidebarElement = ({ allowOutsideClick, element, show, setShow }: SidebarPr
     show && (
       <div className='absolute inset-0'>
         <div
-          className={`absolute inset-0 z-[3] bg-black/30 ${
+          className={`absolute inset-0 z-[3] bg-black/40 backdrop-blur-xs ${
             !allowOutsideClick ? 'pointer-events-none' : ''
           }`}
           onClick={handleClose}
         />
 
-        <aside className='animation-sidebar-in absolute inset-y-0 right-0 w-full sm:w-[35rem] z-[4] bg-slate-800 p-8 !overflow-y-auto h-dvh'>
-          <header className='flex items-start justify-end w-full'>
-            <button
+        <aside className='animation-sidebar-in absolute inset-y-0 right-0 z-[4] h-dvh w-full overflow-y-auto border-l border-border bg-card p-6 shadow-2xl sm:w-[35rem]'>
+          <header className='flex w-full items-start justify-end'>
+            <Button
               type='button'
-              className='p-1 text-white hover:text-purple-700 transition-[border,color] w-fit border rounded-md hover:border-purple-700 shadow-md'
+              variant='ghost'
+              size='icon'
+              className='text-muted-foreground hover:text-foreground'
               onClick={handleClose}
+              aria-label='Cerrar barra lateral'
             >
-              <CloseIcon className='size-5' />
-            </button>
+              <X className='size-5' />
+            </Button>
           </header>
 
           <section>{element}</section>
