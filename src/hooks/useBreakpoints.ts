@@ -19,7 +19,7 @@ const useBreakpoint = () => {
 
   useEffect(() => {
     const calcInnerWidth = () => {
-      const currentWidth = window.innerWidth
+      const currentWidth = window.innerWidth;
       setBreakpoint(() => getCurrentBreakpoint(currentWidth));
     };
 

@@ -4,14 +4,20 @@ import useFilterbox from '@/hooks/useFilterbox';
 
 const Filterbox = () => {
   const {
-    authorList, categoryList, filters, selectedAuthor, selectedCategory,
-    handleChangeFilter
+    authorList,
+    categoryList,
+    filters,
+    selectedAuthor,
+    selectedCategory,
+    handleChangeFilter,
   } = useFilterbox();
 
   return (
     <section className='grid w-full grid-cols-1 gap-4 mt-4 sm:grid-cols-2 md:grid-cols-3'>
       <search className='w-full col-span-2 md:col-span-1'>
-        <label htmlFor='searchbox-book' className='mb-2 font-mono text-white text-md'>Buscar</label>
+        <label htmlFor='searchbox-book' className='mb-2 font-mono text-white text-md'>
+          Buscar
+        </label>
         <input
           id='searchbox-book'
           type='text'
@@ -23,24 +29,28 @@ const Filterbox = () => {
       </search>
 
       <div className='w-full col-span-2 sm:col-span-1'>
-        <label htmlFor='category-select-filter' className='mb-2 font-mono text-white text-md'>Filtro por Categoría</label>
+        <label htmlFor='category-select-filter' className='mb-2 font-mono text-white text-md'>
+          Filtro por Categoría
+        </label>
         <Select
           inputId='category-select-filter'
           className='font-mono'
           options={categoryList}
           value={selectedCategory}
-          onChange={item => handleChangeFilter('category', item?.value)}
+          onChange={(item) => handleChangeFilter('category', item?.value)}
         />
       </div>
 
       <div className='w-full col-span-2 sm:col-span-1'>
-        <label htmlFor='author-select-filter' className='mb-2 font-mono text-white text-md'>Filtro por Autor</label>
+        <label htmlFor='author-select-filter' className='mb-2 font-mono text-white text-md'>
+          Filtro por Autor
+        </label>
         <Select
           inputId='author-select-filter'
           className='font-mono'
           options={authorList}
           value={selectedAuthor}
-          onChange={item => handleChangeFilter('author', item?.value)}
+          onChange={(item) => handleChangeFilter('author', item?.value)}
         />
       </div>
     </section>

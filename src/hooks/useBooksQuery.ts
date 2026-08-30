@@ -5,14 +5,14 @@ import { useUIStore } from '@/store/ui';
 import { getBooks } from '@/utils/library';
 
 const useBooksQuery = () => {
-  const showMenu = useUIStore(state => state.showMenu);
-  
-  const setShowMenu = useUIStore(state => state.setShowMenu);
-  const initializeBooks = useLibraryStore(state => state.initializeBooks);
+  const showMenu = useUIStore((state) => state.showMenu);
+
+  const setShowMenu = useUIStore((state) => state.setShowMenu);
+  const initializeBooks = useLibraryStore((state) => state.initializeBooks);
 
   const booksQuery = useQuery({
     queryKey: ['books'],
-    queryFn: () => getBooks(initializeBooks)
+    queryFn: () => getBooks(initializeBooks),
   });
 
   return {
@@ -21,7 +21,7 @@ const useBooksQuery = () => {
     showMenu,
 
     /** Funciones */
-    setShowMenu
+    setShowMenu,
   };
 };
 
