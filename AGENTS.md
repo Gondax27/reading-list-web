@@ -39,7 +39,7 @@ En este repositorio aplicamos **SDD** para diseñar y construir cambios y funcio
 reading-list-web/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                 # Pipeline CI (Biome CI + Typecheck & Build en PRs y pushes a main)
+│       └── ci.yml                 # Pipeline CI (Biome CI + Tests + Build en PRs hacia main)
 ├── .husky/
 │   └── pre-commit                 # Git Hook: ejecuta lint-staged antes de cada commit
 ├── .lintstagedrc.json             # Reglas de lint-staged para ejecutar Biome en archivos modificados
