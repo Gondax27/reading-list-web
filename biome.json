@@ -6,14 +6,26 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignoreUnknown": false,
-    "includes": ["src/**/*", "index.html", "vite.config.ts"]
+    "includes": [
+      "src/**/*",
+      "docs/**/*",
+      "*.ts",
+      "*.tsx",
+      "*.js",
+      "*.mjs",
+      "*.cjs",
+      "*.json",
+      "*.css",
+      "index.html"
+    ],
+    "ignoreUnknown": false
   },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineWidth": 100
+    "lineWidth": 100,
+    "lineEnding": "lf"
   },
   "javascript": {
     "formatter": {
@@ -26,30 +38,40 @@
   "css": {
     "parser": {
       "tailwindDirectives": true
+    },
+    "formatter": {
+      "enabled": true
+    },
+    "linter": {
+      "enabled": true
     }
   },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "a11y": {
+        "noSvgWithoutTitle": "off",
         "useButtonType": "warn",
         "useKeyWithClickEvents": "off",
-        "noStaticElementInteractions": "off",
-        "noSvgWithoutTitle": "off"
+        "noStaticElementInteractions": "off"
       },
       "correctness": {
+        "noUnusedVariables": "warn",
         "useExhaustiveDependencies": "warn",
-        "useHookAtTopLevel": "error",
-        "noUnusedVariables": "warn"
+        "useHookAtTopLevel": "error"
       },
       "style": {
         "useConst": "error",
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "warn"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "warn"
       }
     }
   },
   "assist": {
+    "enabled": true,
     "actions": {
       "source": {
         "organizeImports": "on"
