@@ -5,18 +5,26 @@ import { useLibraryStore } from '@/store/library';
 import type { LibraryFilter } from '@/types/library';
 
 const useFilterbox = () => {
-  const authorList = useLibraryStore(state => state.authorList);
-  const categoryList = useLibraryStore(state => state.categoryList);
-  const filters = useLibraryStore(state => state.filters);
-  const onApplyFilter = useLibraryStore(state => state.onApplyFilter);
+  const authorList = useLibraryStore((state) => state.authorList);
+  const categoryList = useLibraryStore((state) => state.categoryList);
+  const filters = useLibraryStore((state) => state.filters);
+  const onApplyFilter = useLibraryStore((state) => state.onApplyFilter);
 
-  const selectedAuthor = useMemo(() => (
-    filters.author ? { label: filters.author, value: filters.author } : { label: 'Todas', value: '' }
-  ), [filters.author]);
+  const selectedAuthor = useMemo(
+    () =>
+      filters.author
+        ? { label: filters.author, value: filters.author }
+        : { label: 'Todas', value: '' },
+    [filters.author]
+  );
 
-  const selectedCategory = useMemo(() => (
-    filters.category ? { label: filters.category, value: filters.category } : { label: 'Todas', value: '' }
-  ), [filters.category]);
+  const selectedCategory = useMemo(
+    () =>
+      filters.category
+        ? { label: filters.category, value: filters.category }
+        : { label: 'Todas', value: '' },
+    [filters.category]
+  );
 
   /**
    * Función que aplica el tipo de filtro realizado por el usuario
@@ -24,12 +32,11 @@ const useFilterbox = () => {
    * @param value
    * @returns
    */
-  const handleChangeFilter = (key: keyof LibraryFilter, value?: string) => (
+  const handleChangeFilter = (key: keyof LibraryFilter, value?: string) =>
     onApplyFilter({
       ...filters,
-      [key]: value || ''
-    })
-  );
+      [key]: value || '',
+    });
 
   return {
     /** States */
@@ -40,8 +47,8 @@ const useFilterbox = () => {
     selectedCategory,
 
     /** Funciones */
-    handleChangeFilter
-  }
-}
+    handleChangeFilter,
+  };
+};
 
-export default useFilterbox
+export default useFilterbox;

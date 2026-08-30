@@ -12,7 +12,7 @@ export const requestBooks = async (): Promise<Book[]> => {
     const response: LibraryRequest = await request.json();
 
     if (!request.ok) return Promise.reject([]);
-    
+
     const formatBooks: Book[] = response.default.library.map(({ book }) => book);
     return Promise.resolve(formatBooks);
   } catch (error) {

@@ -8,6 +8,6 @@
 }
 
 .animation-sidebar-in {
-  @apply transition-transform;
+  transition-property: transform;
   animation: sidebar-in 0.3s ease-in-out both;
 }

@@ -16,18 +16,16 @@ const BookCard = ({ book, type, idx, handleChangeBook }: BookCardProps) => (
         ? 'cursor-pointer hover:saturate-200 hover:scale-105 transition-[transform,filter,opacity] animation-fade-in'
         : 'animation-fade-in transition-[opacity]'
     }
-    onClick={
-      type === 'available-list'
-        ? () => handleChangeBook(book)
-        : () => null
-    }
+    onClick={type === 'available-list' ? () => handleChangeBook(book) : () => null}
   >
     <div className='relative flex flex-col'>
       <img
         src={book.cover}
         alt={`Imagén del cover del libro ${book.title}`}
         className='w-auto rounded-md h-96 aspect-[1594/2541] flex-auto'
-        loading={type === 'available-list' ? idx > 7 ? 'lazy' : 'eager' : idx > 5 ? 'lazy' : 'eager'}
+        loading={
+          type === 'available-list' ? (idx > 7 ? 'lazy' : 'eager') : idx > 5 ? 'lazy' : 'eager'
+        }
       />
 
       {type === 'reading-list' && (

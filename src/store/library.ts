@@ -1,8 +1,6 @@
 import { create } from 'zustand';
-
-import { buildAuthors, buildCategories, buildStateBooks } from '@/utils/library';
-
 import type { Book, LibraryFilter, LibraryStore } from '@/types/library';
+import { buildAuthors, buildCategories, buildStateBooks } from '@/utils/library';
 
 export const useLibraryStore = create<LibraryStore>((set, get) => ({
   /** States */
@@ -24,7 +22,7 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
       availableBooks: newAvailableBooks,
       readingList: newReadingList,
       authorList,
-      categoryList
+      categoryList,
     });
   },
   addReadingBook: (book: Book) => {
@@ -35,7 +33,7 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
     set((prevState) => ({
       ...prevState,
       availableBooks: prevState.availableBooks.filter((_book) => _book.ISBN !== book.ISBN),
-      readingList: newReadingList
+      readingList: newReadingList,
     }));
   },
   removeReadingBook: (book: Book) => {
@@ -46,21 +44,22 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
     set((prevState) => ({
       ...prevState,
       availableBooks: [...prevState.availableBooks, book],
-      readingList: newReadingList
+      readingList: newReadingList,
     }));
   },
   onApplyFilter: (filters: LibraryFilter) => {
-    const localBooks = get().readingList.map(book => book.ISBN);
+    const localBooks = get().readingList.map((book) => book.ISBN);
 
-    set(prevState => ({
+    set((prevState) => ({
       ...prevState,
       filters,
-      availableBooks: prevState.allBooks.filter(book => (
-        !localBooks.includes(book.ISBN) &&
-        book.title.toLowerCase().includes(filters.search.toLowerCase()) &&
-        book.genre.includes(filters.category) &&
-        book.author.name.includes(filters.author)
-      ))
+      availableBooks: prevState.allBooks.filter(
+        (book) =>
+          !localBooks.includes(book.ISBN) &&
+          book.title.toLowerCase().includes(filters.search.toLowerCase()) &&
+          book.genre.includes(filters.category) &&
+          book.author.name.includes(filters.author)
+      ),
     }));
-  }
+  },
 }));

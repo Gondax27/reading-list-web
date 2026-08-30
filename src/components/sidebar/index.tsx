@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-
-import useBreakpoint from '@/hooks/useBreakpoints';
-
 import CloseIcon from '@/assets/CloseIcon';
+import useBreakpoint from '@/hooks/useBreakpoints';
 
 import './styles.css';
 
@@ -26,10 +24,13 @@ const SidebarElement = ({ allowOutsideClick, element, show, setShow }: SidebarPr
     if (!isSmallDisplay && show) setShow(false);
   }, [isSmallDisplay]); // eslint-disable-line
 
-  const handleClose = useCallback((ev: React.MouseEvent) => {
-    ev.stopPropagation();
-    setShow(!show)
-  }, [show, setShow]);
+  const handleClose = useCallback(
+    (ev: React.MouseEvent) => {
+      ev.stopPropagation();
+      setShow(!show);
+    },
+    [show, setShow]
+  );
 
   return (
     show && (

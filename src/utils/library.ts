@@ -39,7 +39,7 @@ export const buildStateBooks = (books: Book[]) => {
   }
 
   return { newAvailableBooks, newReadingList };
-}
+};
 
 /**
  * Función que construye la lista de autores disponibles, de acuerdo a los libros ingresados
@@ -58,7 +58,7 @@ export const buildAuthors = (books: Book[]) => {
  * @returns
  */
 export const buildCategories = (books: Book[]) => {
-  const allCategories = [...new Set(books.map(book => book.genre))];
-  const categories = allCategories.map(category => ({ label: category, value: category }));
+  const allCategories = [...new Set(books.map((book) => book.genre))];
+  const categories = allCategories.map((category) => ({ label: category, value: category }));
   return [{ label: 'Todas', value: '' }, ...categories];
 };
