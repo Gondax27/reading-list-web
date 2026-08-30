@@ -24,6 +24,8 @@ export interface LibraryRequest {
   };
 }
 
+export type BookReadStatus = 'unread' | 'reading' | 'completed';
+
 export interface Book {
   title: string;
   pages: number;
@@ -33,6 +35,7 @@ export interface Book {
   year: number;
   ISBN: string;
   author: Author;
+  readStatus?: BookReadStatus;
 }
 
 export interface Author {
@@ -76,4 +79,6 @@ export interface LibraryStore {
   syncBooksFromQuery: (books: Book[], totalFound: number) => void;
   addReadingBook: (book: Book) => void;
   removeReadingBook: (book: Book) => void;
+  updateBookStatus: (isbn: string, status: BookReadStatus) => void;
+  clearReadingList: () => void;
 }

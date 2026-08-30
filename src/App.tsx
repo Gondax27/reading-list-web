@@ -1,5 +1,6 @@
 import AvailableBooks from '@/components/AvailableBooks';
 import ReadingList from '@/components/ReadingList';
+import { Toaster } from '@/components/ui/sonner';
 import { useUIStore } from '@/store/ui';
 import Sidebar from './components/sidebar';
 
@@ -9,7 +10,7 @@ const App = () => {
 
   return (
     <>
-      <main className='grid grid-cols-1 gap-6 p-10 lg:grid-cols-3'>
+      <main className='grid grid-cols-1 gap-6 p-6 sm:p-10 lg:grid-cols-3'>
         <AvailableBooks />
 
         <ReadingList
@@ -29,6 +30,8 @@ const App = () => {
         allowOutsideClick
         setShow={setShowMenu}
       />
+
+      <Toaster richColors closeButton position='bottom-right' />
     </>
   );
 };
