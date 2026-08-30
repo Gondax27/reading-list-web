@@ -21,6 +21,7 @@ const AvailableBooks = () => {
 
           {readingList.length > 0 && (
             <button
+              type='button'
               className='block px-2 py-1 text-gray-300 transition-colors border rounded-md shadow-md lg:hidden hover:border-gray-500 hover:text-gray-500'
               onClick={() => setShowMenu(true)}
             >
