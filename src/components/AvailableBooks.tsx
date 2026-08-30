@@ -48,6 +48,11 @@ const AvailableBooks = () => {
                   ? `${formatCount(totalFound)} libros disponibles en Open Library`
                   : 'Catálogo de libros en Open Library'}
               </p>
+              <div role='status' aria-live='polite' aria-atomic='true' className='sr-only'>
+                {totalFound > 0
+                  ? `Se encontraron ${formatCount(totalFound)} libros disponibles en Open Library`
+                  : 'No hay libros disponibles con los filtros actuales'}
+              </div>
             </div>
           </div>
 

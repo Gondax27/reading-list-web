@@ -64,6 +64,9 @@ const ReadingList = ({ className, wrapperImagesClassName }: ReadingListProps) =>
             Aún no has añadido libros. Explora el catálogo y pulsa <strong>Añadir</strong> para
             guardar tus lecturas pendientes.
           </p>
+          <div role='status' aria-live='polite' aria-atomic='true' className='sr-only'>
+            Tu lista de lectura está vacía
+          </div>
         </div>
       </section>
     );
@@ -71,6 +74,9 @@ const ReadingList = ({ className, wrapperImagesClassName }: ReadingListProps) =>
 
   return (
     <section className={className}>
+      <div role='status' aria-live='polite' aria-atomic='true' className='sr-only'>
+        {`Tienes ${readingList.length} libro${readingList.length === 1 ? '' : 's'} en tu lista de lectura`}
+      </div>
       <div className='flex items-center justify-between gap-3'>
         <div className='flex items-center gap-2'>
           <div className='flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20'>
