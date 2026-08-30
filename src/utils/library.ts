@@ -12,7 +12,7 @@ export const getBooks = async (initializeBooks: (books: Book[]) => void) => {
     const books = await requestBooks();
     initializeBooks(books);
     return Promise.resolve(books);
-  } catch (error) {
+  } catch (_error) {
     return Promise.reject([]);
   }
 };

@@ -1,13 +1,27 @@
+export interface OpenLibraryDoc {
+  key: string;
+  title: string;
+  author_name?: string[];
+  first_publish_year?: number;
+  number_of_pages_median?: number;
+  isbn?: string[];
+  cover_i?: number;
+  subject?: string[];
+  first_sentence?: string[];
+}
+
+export interface OpenLibrarySearchResponse {
+  numFound: number;
+  start: number;
+  docs: OpenLibraryDoc[];
+}
+
 export interface LibraryRequest {
-  default: Default;
-}
-
-export interface Default {
-  library: Library[];
-}
-
-export interface Library {
-  book: Book;
+  default: {
+    library: {
+      book: Book;
+    }[];
+  };
 }
 
 export interface Book {
